@@ -146,29 +146,27 @@ namespace BotCleanLarge
                 botPosition.Y = botPosition.Row - dirtyPosition.Row;
                 botPosition.X = dirtyPosition.Column - botPosition.Column;
               
-                if (botPosition.X >= 0 &&  max_X < botPosition.X)
+                if (botPosition.X >= 0 &&  max_X <= botPosition.X)
                 {
-                    
                     max_X = botPosition.X;
-                    PopulateClosestEdgeInfo(botPosition, dirtyPosition, closestMaxX);
+                    PopulateClosestEdgeInfo(botPosition, dirtyPosition, closestMaxX, max_X != botPosition.X);
                 }
-                else if (min_X > botPosition.X)
+                else if (botPosition.X < 0 && min_X >= botPosition.X)
                 {
                     min_X = botPosition.X;
-                    PopulateClosestEdgeInfo(botPosition, dirtyPosition,closestMinX);
-                    
+                    PopulateClosestEdgeInfo(botPosition, dirtyPosition, closestMinX, max_X != botPosition.X);
                 }
 
-                if (botPosition.Y >= 0 && max_Y < botPosition.Y)
+                if (botPosition.Y >= 0 && max_Y <= botPosition.Y)
                 {
                     max_Y = botPosition.Y;
-                    PopulateClosestEdgeInfo(botPosition, dirtyPosition,closestMaxY);
+                    PopulateClosestEdgeInfo(botPosition, dirtyPosition, closestMaxY, max_Y != botPosition.Y);
                     
                 }
-                else if (min_Y > botPosition.Y)
+                else if (botPosition.Y < 0 && min_Y >= botPosition.Y)
                 {
                     min_Y = botPosition.Y;
-                    PopulateClosestEdgeInfo(botPosition, dirtyPosition,closestMinY);
+                    PopulateClosestEdgeInfo(botPosition, dirtyPosition, closestMinY, max_Y != botPosition.Y);
                     
                 }
             }
@@ -182,11 +180,11 @@ namespace BotCleanLarge
 
         }
 
-        private void PopulateClosestEdgeInfo(Position botPosition, Position dirtyPosition, EdgeInfo currentclosestEdge)
+        private void PopulateClosestEdgeInfo(Position botPosition, Position dirtyPosition, EdgeInfo currentclosestEdge,bool isOverwrite)
         {
             int totalDistance;
             totalDistance = Math.Abs(botPosition.Y) + Math.Abs(botPosition.X);
-            if (totalDistance < currentclosestEdge.Distance)
+            if (isOverwrite || totalDistance < currentclosestEdge.Distance)
             {
                 currentclosestEdge.Distance = totalDistance;
                 currentclosestEdge.Position = dirtyPosition;
