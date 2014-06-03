@@ -162,6 +162,7 @@ namespace BotCleanLarge
             {
                 foreach (var character in row)
                 {
+                    if(character == 'b') continue;
                     character.Should().Be('-');
                 }
             }

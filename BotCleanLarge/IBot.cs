@@ -44,6 +44,59 @@ namespace BotCleanLarge
 
             FindClosestEdge(botPosition, dirtPositions, matrix);
 
+            string movement = null;
+            Position nextDirtyPoint;
+
+            if (botPosition.Row == ClosestEdge.Position.Row && botPosition.Column == ClosestEdge.Position.Column)
+            {
+                movement = Clean;
+            }
+            /* Identify direction to go */
+            else if (botPosition.Row == ClosestEdge.Position.Row)
+            {
+                /* Direction move Left/Right */
+                if (botPosition.Column > ClosestEdge.Position.Column)
+                {
+                    movement = Left;
+                }
+                else
+                {
+                    movement = Right;
+                }
+            }
+            else if (botPosition.Column == ClosestEdge.Position.Column)
+            {
+                // Diretion up/down
+                if (botPosition.Row > ClosestEdge.Position.Row)
+                {
+                    movement = Up;
+                }
+                else
+                {
+                    movement = Down;
+                }
+            }
+            else
+            {
+                //Isolate Matrix by getting all dirty Postions between Bot and Edge
+
+                var minColumn = Math.Min(botPosition.Column, ClosestEdge.Position.Column);
+                var maxColumn = Math.Max(botPosition.Column, ClosestEdge.Position.Column);
+
+                var minRow = Math.Min(botPosition.Row, ClosestEdge.Position.Row);
+                var maxRow = Math.Max(botPosition.Row, ClosestEdge.Position.Row);
+
+
+                var isolatedDirtyPositions = dirtPositions.Where(x => x.Column >= minColumn &&
+                                                                      x.Column <= maxColumn &&
+                                                                      x.Row >= minRow &&
+                                                                      x.Row <= maxRow).ToList();
+
+                nextDirtyPoint = NextDirtyPoint(isolatedDirtyPositions, botPosition);
+
+            }
+
+
             if (matrix[botPosition.Row, botPosition.Column] == 'd')
             {
                 matrix[botPosition.Row, botPosition.Column] = '-';
@@ -52,29 +105,16 @@ namespace BotCleanLarge
                 return Clean;
             }
 
-            var shortestDistance = int.MaxValue;
 
-            var nextDirtyPoint = new Position();
 
-            foreach (var dirtPosition in dirtPositions)
-            {
-                int dist = Math.Abs(botPosition.Row - dirtPosition.Row) + Math.Abs(botPosition.Column - dirtPosition.Column);
-                if (dist < shortestDistance)
-                {
-                    shortestDistance = dist;
-                    nextDirtyPoint = dirtPosition;
-                }
-            }
-
-            string movement = null;
-            if (botPosition.Row != nextDirtyPoint.Row)
-            {
-                movement = botPosition.Row < nextDirtyPoint.Row ? Down : Up;
-            }
-            else
-            {
-                movement = botPosition.Column < nextDirtyPoint.Column ? Right : Left;
-            }
+            //if (botPosition.Row != nextDirtyPoint.Row)
+            //{
+            //    movement = botPosition.Row < nextDirtyPoint.Row ? Down : Up;
+            //}
+            //else
+            //{
+            //    movement = botPosition.Column < nextDirtyPoint.Column ? Right : Left;
+            //}
 
             matrix[botPosition.Row, botPosition.Column] = '-';
 
@@ -104,6 +144,22 @@ namespace BotCleanLarge
             return movement;
         }
 
+        private static Position NextDirtyPoint(List<Position> dirtPositions, Position botPosition)
+        {
+            var shortestDistance = int.MaxValue;
+
+            var nextDirtyPoint = new Position();
+            foreach (var dirtPosition in dirtPositions)
+            {
+                int dist = Math.Abs(botPosition.Row - dirtPosition.Row) + Math.Abs(botPosition.Column - dirtPosition.Column);
+                if (dist < shortestDistance)
+                {
+                    shortestDistance = dist;
+                    nextDirtyPoint = dirtPosition;
+                }
+            }
+            return nextDirtyPoint;
+        }
 
 
         public void FindClosestEdge(Position botPosition, List<Position> dirtyPositions, char[,] matrix)
@@ -141,32 +197,35 @@ namespace BotCleanLarge
             ClosestEdge = new EdgeInfo();
             ClosestEdge.Distance = int.MaxValue;
 
+            int dirtyDistance_Y;
+            int dirtyDistance_X;
+
             foreach (var dirtyPosition in dirtyPositions)
             {
-                botPosition.Y = botPosition.Row - dirtyPosition.Row;
-                botPosition.X = dirtyPosition.Column - botPosition.Column;
-              
-                if (botPosition.X >= 0 &&  max_X <= botPosition.X)
+                dirtyDistance_Y = botPosition.Row - dirtyPosition.Row;
+                dirtyDistance_X = dirtyPosition.Column - botPosition.Column;
+
+                if (dirtyDistance_X >= 0 && max_X <= dirtyDistance_X)
                 {
-                    max_X = botPosition.X;
-                    PopulateClosestEdgeInfo(botPosition, dirtyPosition, closestMaxX, max_X != botPosition.X);
+                    max_X = dirtyDistance_X;
+                    PopulateClosestEdgeInfo(dirtyPosition, closestMaxX, max_X != dirtyDistance_X, dirtyDistance_X, dirtyDistance_Y);
                 }
-                else if (botPosition.X < 0 && min_X >= botPosition.X)
+                else if (dirtyDistance_X < 0 && min_X >= dirtyDistance_X)
                 {
-                    min_X = botPosition.X;
-                    PopulateClosestEdgeInfo(botPosition, dirtyPosition, closestMinX, max_X != botPosition.X);
+                    min_X = dirtyDistance_X;
+                    PopulateClosestEdgeInfo(dirtyPosition, closestMinX, max_X != dirtyDistance_X, dirtyDistance_X, dirtyDistance_Y);
                 }
 
-                if (botPosition.Y >= 0 && max_Y <= botPosition.Y)
+                if (dirtyDistance_Y >= 0 && max_Y <= dirtyDistance_Y)
                 {
-                    max_Y = botPosition.Y;
-                    PopulateClosestEdgeInfo(botPosition, dirtyPosition, closestMaxY, max_Y != botPosition.Y);
+                    max_Y = dirtyDistance_Y;
+                    PopulateClosestEdgeInfo(dirtyPosition, closestMaxY, max_Y != dirtyDistance_Y, dirtyDistance_X, dirtyDistance_Y);
                     
                 }
-                else if (botPosition.Y < 0 && min_Y >= botPosition.Y)
+                else if (dirtyDistance_Y < 0 && min_Y >= dirtyDistance_Y)
                 {
-                    min_Y = botPosition.Y;
-                    PopulateClosestEdgeInfo(botPosition, dirtyPosition, closestMinY, max_Y != botPosition.Y);
+                    min_Y = dirtyDistance_Y;
+                    PopulateClosestEdgeInfo( dirtyPosition, closestMinY, max_Y != dirtyDistance_Y, dirtyDistance_X, dirtyDistance_Y);
                     
                 }
             }
@@ -180,10 +239,10 @@ namespace BotCleanLarge
 
         }
 
-        private void PopulateClosestEdgeInfo(Position botPosition, Position dirtyPosition, EdgeInfo currentclosestEdge,bool isOverwrite)
+        private void PopulateClosestEdgeInfo( Position dirtyPosition, EdgeInfo currentclosestEdge,bool isOverwrite, int distanceX, int distanceY)
         {
             int totalDistance;
-            totalDistance = Math.Abs(botPosition.Y) + Math.Abs(botPosition.X);
+            totalDistance = Math.Abs(distanceY) + Math.Abs(distanceX);
             if (isOverwrite || totalDistance < currentclosestEdge.Distance)
             {
                 currentclosestEdge.Distance = totalDistance;

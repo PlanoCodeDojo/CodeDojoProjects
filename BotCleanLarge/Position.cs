@@ -17,7 +17,7 @@
         public int Column { get; set; }
 
         //For our Algorithm based on bot postion
-        public int X { get; set; }
-        public int Y { get; set; }
+        //public int Relative_X { get; set; }
+        //public int Relative_Y { get; set; }
     }
 }
